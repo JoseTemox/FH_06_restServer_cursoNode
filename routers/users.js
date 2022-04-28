@@ -1,6 +1,10 @@
 
 const { Router } = require('express');
 const { check } = require('express-validator');
+
+const { validarCampos } = require('../middlewares/validar-campos');
+const { isValidRole, isEmailExist,isExistUserById } = require('../helpers/db-validators');
+
 const {usersGet,
     usersPost,
     usersPut,
@@ -14,13 +18,29 @@ const router = Router();
 router.get('/', usersGet);
 
 router.post('/', [
-    check('email', 'Email is invalid').isEmail()
+    check('name', 'Name is required').not().isEmpty(),
+    check('password', 'Password must to be min 6 characters').isLength({min:6}),
+    check('email', 'Email is invalid').isEmail(),
+    check('email').custom(isEmailExist),
+    check('role').custom( isValidRole),
+    // check('role').custom( (role) => isValidRole(role)), es igual que lo anterior
+    // check('rol', 'Rol is invalid').isIn(['ADMIN_ROLE','USER_ROLE']),
+    validarCampos
 ],usersPost);
 
-router.put('/:id', usersPut);
+router.put('/:id', [
+    check('id', 'Is not valid ID').isMongoId(),
+    check('id').custom(isExistUserById),
+    check('role').custom( isValidRole),
+    validarCampos
+],usersPut);
 
 
-router.delete('/', usersDelete);
+router.delete('/:id', [
+    check('id', 'Is not valid ID').isMongoId(),
+    check('id').custom(isExistUserById),
+    validarCampos
+],usersDelete);
 
 router.patch('/', usersPatch);
 

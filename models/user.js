@@ -18,7 +18,7 @@ const UserSchema = Schema ({
     img: {
         type: String,
     },
-    rol:{
+    role:{
         type: String,
         required: true,
         enum: ['ADMIN_ROLE', 'USER_ROLE']
@@ -29,9 +29,14 @@ const UserSchema = Schema ({
     },
     google: {
         type: Boolean,
-        default: true
+        default: false
     },
 
-})
+});
+
+UserSchema.methods.toJSON = function() {
+    const { __, password, ...user} = this.toObject();
+    return user;
+}
 
 module.exports = model('User', UserSchema);
